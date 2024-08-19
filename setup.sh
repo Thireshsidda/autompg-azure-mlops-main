@@ -29,7 +29,7 @@ az extension add -n ml -y
 #RESOURCE_GROUP_NAME="cloudml"
 GROUP="default_resource_group"
 LOCATION="eastus"
-WORKSPACE="msai"
+WORKSPACE="test_workspace_azure_ml"
 # </set_variables>
 
 # If RESOURCE_GROUP_NAME is empty, the az configure is pending.
