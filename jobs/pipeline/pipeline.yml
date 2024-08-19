@@ -1,0 +1,49 @@
+$schema: https://azuremlschemas.azureedge.net/latest/pipelineJob.schema.json
+type: pipeline
+
+description: Train model with auto mpg data
+
+display_name: auto-mpg-pipeline-example
+experiment_name: auto-mpg-pipeline-example
+jobs:
+
+  prep_job:
+    type: command
+    inputs:
+      data:
+           "type": uri_folder
+           "path": ./data
+    outputs:
+      train_data: 
+        mode: upload
+      test_data:
+        mode: upload
+    code: src/prep
+    environment: azureml:AzureML-sklearn-1.0-ubuntu20.04-py38-cpu@latest
+    compute: azureml:c002
+    command: >-
+      python prep.py 
+      --data ${{inputs.data}} 
+      --train_data ${{outputs.train_data}}
+      --test_data ${{outputs.test_data}}
+  
+  train_job:
+    type: command
+    inputs:
+      train_data: ${{parent.jobs.prep_job.outputs.train_data}}
+      test_data: ${{parent.jobs.prep_job.outputs.test_data}}
+      learning_rate: 0.001
+      registered_model_name: "model_file_test_dev893"
+    outputs:
+      model: 
+    code: src/train
+    environment: azureml:AzureML-sklearn-1.0-ubuntu20.04-py38-cpu@latest
+    compute: azureml:c002
+    command: >-
+      python train.py 
+      --train_data ${{inputs.train_data}} 
+      --test_data ${{inputs.test_data}}
+      --learning_rate ${{inputs.learning_rate}} 
+      --registered_model_name ${{inputs.registered_model_name}}
+      --model ${{outputs.model}}
+
