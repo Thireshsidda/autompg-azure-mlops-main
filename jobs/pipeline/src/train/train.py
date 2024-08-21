@@ -215,8 +215,22 @@ def main():
     )
 
     # Upload predictions to Azure Data assets (Blob Storage)
-    ws = Workspace.from_config()
-    datastore = Datastore.get(ws, datastore_name='workspaceblobstore')  # Get default datastore
+    subscription_id =  "6490c64b-602a-4887-b258-36064f4cb8d4"
+    resource_group =  "default_resource_group"
+    workspace_name =  "test_workspace_azure_ml"
+
+    # Load the workspace config
+    ws = Workspace.get(
+        name='workspace_name',
+        subscription_id='subscription_id',
+        resource_group='resource_group'
+    )
+
+    # Get the default datastore in your workspace
+    datastore = workspace.get_default_datastore()
+    
+    #ws = Workspace.from_config()
+    #datastore = Datastore.get(ws, datastore_name='workspaceblobstore')  # Get default datastore
 
     datastore.upload_files(
         files=[prediction_output_path],
