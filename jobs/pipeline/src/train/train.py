@@ -227,7 +227,7 @@ def main():
     )
 
     # Get the default datastore in your workspace
-    datastore = workspace.get_default_datastore()
+    datastore = ws.get_default_datastore()
     
     #ws = Workspace.from_config()
     #datastore = Datastore.get(ws, datastore_name='workspaceblobstore')  # Get default datastore
