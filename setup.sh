@@ -2,6 +2,7 @@
 # rc install - uncomment and adjust below to run all tests on a CLI release candidate
 # az extension remove -n ml
 
+
 # <az_ml_install>
 az extension add -n ml -y
 # </az_ml_install>
@@ -31,6 +32,7 @@ GROUP="default_resource_group"
 LOCATION="eastus"
 WORKSPACE="test_workspace_azure_ml"
 # </set_variables>
+
 
 # If RESOURCE_GROUP_NAME is empty, the az configure is pending.
 RESOURCE_GROUP_NAME=${RESOURCE_GROUP_NAME:-}
