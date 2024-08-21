@@ -2,17 +2,11 @@ import os
 import io
 import mlflow
 import argparse
-import numpy as np
 import pandas as pd
-
 from sklearn.preprocessing import StandardScaler
 from sklearn.pipeline import make_pipeline
 from sklearn.compose import make_column_transformer
 from sklearn.ensemble import GradientBoostingRegressor
-
-mlflow.start_run()  # Start a new MLflow run
-
-os.makedirs("./outputs", exist_ok=True)  # Create the "outputs" directory if it doesn't exist
 
 def select_first_file(path):
     """Selects the first file in the folder under the assumption there is only one file in the folder.
@@ -31,7 +25,12 @@ def main():
     parser.add_argument("--n_estimators", required=False, default=100, type=int)
     parser.add_argument("--learning_rate", required=False, default=0.1, type=float)
     parser.add_argument("--registered_model_name", type=str, help="model name")
+    parser.add_argument("--model", type=str, help="path to model file")  # Add this if needed
     args = parser.parse_args()  # Parse the command-line arguments
+
+    mlflow.start_run()  # Start a new MLflow run
+
+    os.makedirs("./outputs", exist_ok=True)  # Create the "outputs" directory if it doesn't exist
 
     # Load data
     car_mpg_train = pd.read_csv(select_first_file(args.train_data))  # Read the training data
@@ -76,17 +75,15 @@ def main():
         "Predicted": predictions
     })
 
-    # Save predictions to an in-memory CSV file
-    csv_buffer = io.StringIO()
-    prediction_df.to_csv(csv_buffer, index=False)
-    csv_buffer.seek(0)
-
     # Save the in-memory CSV to a file and log it as an artifact
-    artifact_path = "predictions.csv"
-    with open(artifact_path, "w") as f:
-        f.write(csv_buffer.getvalue())
-    
-    mlflow.log_artifact(artifact_path)
+    with io.StringIO() as csv_buffer:
+        prediction_df.to_csv(csv_buffer, index=False)
+        csv_buffer.seek(0)
+        artifact_path = "predictions.csv"
+        with open(artifact_path, "w") as f:
+            f.write(csv_buffer.getvalue())
+        
+        mlflow.log_artifact(artifact_path)
 
     # Register the model pipeline in MLflow
     mlflow.sklearn.log_model(
@@ -99,6 +96,7 @@ def main():
 
 if __name__ == '__main__':
     main()
+
 
 
 
