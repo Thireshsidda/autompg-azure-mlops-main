@@ -74,6 +74,20 @@
 
 #     mlflow.log_metric("RMSE", float(rmse))
 
+    
+#     #Make predictions on the test data
+#     predictions = model_pipeline.predict(X_test)
+
+#     # Save predictions to a DataFrame
+#     prediction_df = pd.DataFrame({
+#         "Actual": y_test,
+#         "Predicted": predictions
+#     })
+
+#     # Save predictions to a CSV file
+#     prediction_df.to_csv(prediction_output_path, index=False)
+
+
 #     print("Registering model pipeline")
 
 #     mlflow.sklearn.log_model(
@@ -81,6 +95,16 @@
 #         registered_model_name="gbr-car-mpg-predictor",
 #         artifact_path="gbr-car-mpg-predictor"
 #     ) # Register the model pipeline in MLflow
+
+#     # Upload predictions to Azure Data assets (Blob Storage)
+#     ws = Workspace.from_config()
+#     # Get the default datastore in your workspace
+#     datastore = workspace.get_default_datastore()
+
+#     datastore.upload_files(
+#         files=[prediction_output_path],
+#         target_path="predictions/",
+#         overwrite=True)
 
 #     mlflow.end_run()
 
@@ -105,7 +129,7 @@ from sklearn.pipeline import make_pipeline
 from sklearn.compose import make_column_transformer
 from sklearn.ensemble import GradientBoostingRegressor
 
-from azureml.core import Run, Workspace, Datastore, Dataset
+from azureml.core import Workspace, Datastore
 
 mlflow.start_run()  # Start a new MLflow run
 
@@ -132,7 +156,7 @@ def main():
     parser.add_argument("--learning_rate", required=False, default=0.1, type=float)
     parser.add_argument("--registered_model_name", type=str, help="model name")
     parser.add_argument("--model", type=str, help="path to model file")
-    parser.add_argument("--output_predictions", type=str, help="path to save predictions")
+    parser.add_argument("--output_predictions", type=str, help="path to save predictions", default="./outputs")
     args = parser.parse_args()  # Parse the command-line arguments
 
     car_mpg_train = pd.read_csv(select_first_file(args.train_data))  # Read the training data
@@ -192,10 +216,11 @@ def main():
 
     # Upload predictions to Azure Data assets (Blob Storage)
     ws = Workspace.from_config()
-    datastore = Datastore.get(ws, datastore_name='testworkspacea6685790540')
+    datastore = Datastore.get(ws, datastore_name='workspaceblobstore')  # Get default datastore
+
     datastore.upload_files(
-        [prediction_output_path],
-        target_path='predictions/',
+        files=[prediction_output_path],
+        target_path="predictions/",
         overwrite=True
     )
 
@@ -204,3 +229,4 @@ def main():
 
 if __name__ == '__main__':
     main()
+
